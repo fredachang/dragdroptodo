@@ -1,3 +1,5 @@
+import burgerMenu from "../public/burger-menu.svg";
+
 interface Props {
   id: string;
   description: string;
@@ -9,6 +11,9 @@ export function ToDo(props: Props) {
   const { id, description, deleteToDo, updateToDo } = props;
   return (
     <>
+      <div className="burger-menu">
+        <img src={burgerMenu} alt="drag here" />
+      </div>
       <input
         type="text"
         value={description}

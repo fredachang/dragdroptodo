@@ -149,6 +149,7 @@ export function App() {
         <div className="form-container">
           <form onSubmit={(e) => createNewToDo(e)}>
             <input
+              className="new-to-do-input"
               type="text"
               placeholder="enter to-do"
               value={newToDo}
