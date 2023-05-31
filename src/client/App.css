@@ -1,0 +1,137 @@
+@font-face {
+  font-family: "Fragment-Sans-Light";
+  src: local("Fragment"), url("./fonts/PPFragment-SansLight.otf") format("truetype");
+}
+
+@font-face {
+  font-family: "Fragment-Sans-Regular";
+  src: local("Fragment"), url("./fonts/PPFragment-SansRegular.otf") format("truetype");
+}
+
+@font-face {
+  font-family: "Fragment-Sans-Bold";
+  src: local("Fragment"), url("./fonts/PPFragment-SansExtraBold.otf") format("truetype");
+}
+
+@font-face {
+  font-family: "Fragment-Serif-Regular";
+  src: local("Fragment"), url("./fonts/PPFragment-SerifRegular.otf") format("truetype");
+}
+
+@font-face {
+  font-family: "Fragment-Serif-Light";
+  src: local("Fragment"), url("./fonts/PPFragment-SerifLight.otf") format("truetype");
+}
+
+@font-face {
+  font-family: "Fragment-Serif-Bold";
+  src: local("Fragment"), url("./fonts/PPFragment-SerifExtraBold.otf") format("truetype");
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Fragment-Sans-Regular";
+  background-color: black;
+  color: white;
+}
+
+h1 {
+  font-family: "Fragment-Sans-Light";
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+h2 {
+  padding: 0 10px;
+}
+
+.header {
+  padding: 5px 10px;
+}
+
+.body {
+  display: flex;
+  justify-content: space-around;
+}
+
+form {
+  margin-left: 10px;
+  text-align: center;
+}
+
+input {
+  width: 25%;
+  height: 30px;
+  background-color: black;
+  border: none;
+  border-bottom: 0.5px solid white;
+  color: white;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0.2rem rgb(220, 220, 220);
+}
+
+button {
+  height: 30px;
+  width: 30px;
+  background-color: black;
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+}
+
+.column-container {
+  margin: 50px auto;
+
+  width: 30%;
+}
+
+.column {
+  height: 100%;
+  width: 90%;
+  background-color: grey;
+  border-radius: 20px;
+  padding: 10px 10px;
+  margin: 10px;
+}
+
+.column-droppable {
+  height: 100vh;
+  width: 100%;
+  background-color: grey;
+  padding: 10px 10px;
+  margin: 10px;
+  border-radius: 20px;
+  border: 1px solid black;
+}
+
+.to-do-item {
+  margin: 10px;
+  padding: 2px 5px;
+  background-color: black;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+}
+
+.to-do-item input {
+  color: white;
+  width: 80%;
+}
+
+.to-do-item-dragged {
+  margin: 10px;
+  padding: 2px 5px;
+  background-color: black;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid black;
+}
+
+.delete-button {
+  border: none;
+}
