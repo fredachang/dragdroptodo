@@ -11,8 +11,4 @@ const PORT = 4000;
 app.use(cors());
 app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-  res.send("hello world");
-});
-
 app.listen(PORT, () => console.log(`App listening on Port: ${PORT}`));

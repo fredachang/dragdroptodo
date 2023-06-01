@@ -32,10 +32,44 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Fragment-Sans-Regular";
-  background-color: rgb(20, 20, 20);
+  background-color: black;
   color: white;
+}
+
+.left-panel {
+  padding: 5px 10px;
+  height: 100vh;
+  width: 15vw;
+  background-color: black;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.right-panel {
+  width: 85vw;
+  height: 100vh;
+  position: fixed;
+  right: 0;
   background: url(./public/backdrop-4.png);
   background-size: contain;
+}
+
+form {
+  margin-left: 10px;
+  margin-top: 50px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.column-section {
+  width: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
 }
 
 h1 {
@@ -46,23 +80,6 @@ h1 {
 
 h2 {
   padding: 0 10px;
-}
-
-.header {
-  padding: 5px 10px;
-}
-
-.body {
-  display: flex;
-  justify-content: space-around;
-}
-
-form {
-  margin-left: 10px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 input {
@@ -94,22 +111,22 @@ button {
 }
 
 .column-container {
-  margin: 50px auto;
-  width: 33%;
+  margin: 0;
+  width: 30%;
+  min-height: 500px;
 }
 
 .column {
-  height: 500px;
+  height: 100%;
   width: 90%;
   background-color: rgb(28, 28, 28);
-
   border-radius: 20px;
   padding: 10px 10px;
   margin: 10px;
 }
 
 .column-droppable {
-  height: 500px;
+  height: 100%;
   width: 90%;
   background-color: rgb(28, 28, 28);
   border-radius: 20px;
