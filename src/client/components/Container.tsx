@@ -1,13 +1,9 @@
 import { Draggable, Droppable } from "react-beautiful-dnd";
-import { Task } from "../data";
+import { Column, Task } from "../data";
 import { ToDo } from "./ToDo";
 
 interface Props {
-  column: {
-    id: string;
-    title: string;
-    taskIds: number[];
-  };
+  column: Column;
   tasks: Task[];
   deleteToDo: (id: string) => void;
   updateToDo: (id: string, newDescription: string) => void;

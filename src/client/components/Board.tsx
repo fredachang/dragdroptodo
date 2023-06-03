@@ -3,11 +3,11 @@ import { SingleBoard, Column, Task, Tasks } from "../data";
 import { Container } from "./Container";
 import { v4 as uuidv4 } from "uuid";
 import { useLocalStorage } from "react-use";
-
 export type TasksArray = Tasks[];
 
 interface Props {
   data: SingleBoard;
+  deleteBoard: (id: string) => void;
 }
 
 const reorderColumn = (sourceCol: Column, sourceIndex: number, destinationIndex: number) => {
@@ -23,9 +23,9 @@ const reorderColumn = (sourceCol: Column, sourceIndex: number, destinationIndex:
 };
 
 export function Board(props: Props) {
-  const { data } = props;
-  const [board, setBoard] = useLocalStorage<SingleBoard>("board", data);
-  const [newToDo, setNewToDo] = useLocalStorage<string>("to-do", "");
+  const { data, deleteBoard } = props;
+  const [board, setBoard] = useLocalStorage<SingleBoard>(`board-${data.id}`, data);
+  const [newToDo, setNewToDo] = useLocalStorage<string>("new-to-do", "");
 
   const boardWithDefault = board ?? data;
   const newToDoWithDefault = newToDo ?? "";
@@ -42,15 +42,15 @@ export function Board(props: Props) {
       description: newToDoWithDefault,
     };
 
-    const copyOfTasks = { ...boardWithDefault.tasks };
+    const copyOfTasks = [...boardWithDefault.tasks];
 
-    copyOfTasks[parseInt(newTask.id)] = newTask;
+    copyOfTasks.push(newTask);
 
     const copyOfColumns = { ...boardWithDefault.columns };
 
     const copyOfTaskIds = [...boardWithDefault.columns["column-1"].taskIds];
 
-    copyOfTaskIds.push(parseInt(newTask.id));
+    copyOfTaskIds.push(newTask.id);
 
     copyOfColumns["column-1"].taskIds = copyOfTaskIds;
 
@@ -64,15 +64,18 @@ export function Board(props: Props) {
   };
 
   const deleteToDo = (id: string) => {
-    const foundColumn = Object.values(boardWithDefault.columns).find((column) =>
-      column.taskIds.includes(parseInt(id))
+    const columnId = Object.keys(boardWithDefault.columns).find((columnId) =>
+      boardWithDefault.columns[columnId].taskIds.includes(id)
     );
-    if (foundColumn) {
-      foundColumn.taskIds = foundColumn.taskIds.filter((taskId) => taskId !== parseInt(id));
-      const updatedColumns = { ...boardWithDefault.columns };
-      updatedColumns[foundColumn.id] = foundColumn;
-      const updatedTasks = { ...boardWithDefault.tasks };
-      delete updatedTasks[parseInt(id)];
+
+    if (columnId) {
+      const column = boardWithDefault.columns[columnId];
+      const updatedColumn = column.taskIds.filter((taskId) => taskId !== id);
+      const updatedColumns = {
+        ...boardWithDefault.columns,
+        [columnId]: { ...column, taskIds: updatedColumn },
+      };
+      const updatedTasks = boardWithDefault.tasks.filter((task) => task.id !== id);
       setBoard({
         ...boardWithDefault,
         tasks: updatedTasks,
@@ -82,12 +85,18 @@ export function Board(props: Props) {
   };
 
   const updateToDo = (id: string, newDescription: string) => {
-    const copyOfTasks = { ...boardWithDefault.tasks };
-    copyOfTasks[parseInt(id)].description = newDescription;
-    setBoard({
-      ...boardWithDefault,
-      tasks: copyOfTasks,
-    });
+    const taskIndex = boardWithDefault.tasks.findIndex((task) => task.id === id);
+    if (taskIndex !== -1) {
+      const updatedTasks = [...boardWithDefault.tasks];
+      updatedTasks[taskIndex] = {
+        ...updatedTasks[taskIndex],
+        description: newDescription,
+      };
+      setBoard({
+        ...boardWithDefault,
+        tasks: updatedTasks,
+      });
+    }
   };
 
   const onDragEnd = (result: DropResult) => {
@@ -146,6 +155,17 @@ export function Board(props: Props) {
 
   return (
     <>
+      <div className="board-header">
+        <h2>{boardWithDefault.title}</h2>
+        <button
+          className="delete-button"
+          onClick={() => {
+            deleteBoard(boardWithDefault.id);
+          }}
+        >
+          &#8722;
+        </button>
+      </div>
       <div className="form-container">
         <form onSubmit={(e) => createNewToDo(e)}>
           <input
@@ -166,7 +186,9 @@ export function Board(props: Props) {
             const column = boardWithDefault.columns[columnId];
 
             // access the tasks
-            const tasks = column.taskIds.map((taskId) => boardWithDefault.tasks[taskId]);
+            const tasks = column.taskIds.flatMap((taskId) => {
+              return boardWithDefault.tasks.filter((task) => task.id === taskId);
+            });
 
             return (
               <Container

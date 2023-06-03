@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Board } from "./components/Board";
 import { Link, Route, Routes } from "react-router-dom";
 import { useLocalStorage } from "react-use";
+import { Welcome } from "./components/Welcome";
 
 export function App() {
   const [boards, setBoards] = useLocalStorage<Boards>("boards", initialData);
@@ -23,7 +24,7 @@ export function App() {
     const newBoard: SingleBoard = {
       id: uuidv4(),
       title: boardNameWithDefault,
-      tasks: {},
+      tasks: [],
       columns: {
         "column-1": {
           id: "column-1",
@@ -47,7 +48,13 @@ export function App() {
     const newBoards: Boards = [...boardsWithDefault, newBoard];
     setBoards(newBoards);
     setBoardName("");
+    localStorage.setItem(`board-${newBoard.id}`, JSON.stringify(newBoard));
   }
+
+  const deleteBoard = (id: string) => {
+    const updatedBoards = boardsWithDefault.filter((board) => board.id !== id);
+    setBoards(updatedBoards);
+  };
 
   return (
     <>
@@ -75,8 +82,13 @@ export function App() {
 
       <main className="right-panel">
         <Routes>
+          <Route path="/" element={<Welcome />} />
           {boardsWithDefault.map((board) => (
-            <Route key={board.id} path={`/board/${board.id}`} element={<Board data={board} />} />
+            <Route
+              key={board.id}
+              path={`/board/${board.id}`}
+              element={<Board data={board} deleteBoard={deleteBoard} />}
+            />
           ))}
         </Routes>
       </main>
