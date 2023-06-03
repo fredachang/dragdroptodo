@@ -1,8 +1,8 @@
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { SingleBoard, Column, Task, Tasks } from "../data";
 import { Container } from "./Container";
-import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { useLocalStorage } from "react-use";
 
 export type TasksArray = Tasks[];
 
@@ -24,8 +24,11 @@ const reorderColumn = (sourceCol: Column, sourceIndex: number, destinationIndex:
 
 export function Board(props: Props) {
   const { data } = props;
-  const [board, setBoard] = useState(data);
-  const [newToDo, setNewToDo] = useState("");
+  const [board, setBoard] = useLocalStorage<SingleBoard>("board", data);
+  const [newToDo, setNewToDo] = useLocalStorage<string>("to-do", "");
+
+  const boardWithDefault = board ?? data;
+  const newToDoWithDefault = newToDo ?? "";
 
   const handleNewToDo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewToDo(e.target.value);
@@ -36,23 +39,23 @@ export function Board(props: Props) {
 
     const newTask: Task = {
       id: uuidv4(),
-      description: newToDo,
+      description: newToDoWithDefault,
     };
 
-    const copyOfTasks = { ...board.tasks };
+    const copyOfTasks = { ...boardWithDefault.tasks };
 
     copyOfTasks[parseInt(newTask.id)] = newTask;
 
-    const copyOfColumns = { ...board.columns };
+    const copyOfColumns = { ...boardWithDefault.columns };
 
-    const copyOfTaskIds = [...board.columns["column-1"].taskIds];
+    const copyOfTaskIds = [...boardWithDefault.columns["column-1"].taskIds];
 
     copyOfTaskIds.push(parseInt(newTask.id));
 
     copyOfColumns["column-1"].taskIds = copyOfTaskIds;
 
     const newData = {
-      ...board,
+      ...boardWithDefault,
       tasks: copyOfTasks,
       columns: copyOfColumns,
     };
@@ -61,17 +64,17 @@ export function Board(props: Props) {
   };
 
   const deleteToDo = (id: string) => {
-    const foundColumn = Object.values(board.columns).find((column) =>
+    const foundColumn = Object.values(boardWithDefault.columns).find((column) =>
       column.taskIds.includes(parseInt(id))
     );
     if (foundColumn) {
       foundColumn.taskIds = foundColumn.taskIds.filter((taskId) => taskId !== parseInt(id));
-      const updatedColumns = { ...board.columns };
+      const updatedColumns = { ...boardWithDefault.columns };
       updatedColumns[foundColumn.id] = foundColumn;
-      const updatedTasks = { ...board.tasks };
+      const updatedTasks = { ...boardWithDefault.tasks };
       delete updatedTasks[parseInt(id)];
       setBoard({
-        ...board,
+        ...boardWithDefault,
         tasks: updatedTasks,
         columns: updatedColumns,
       });
@@ -79,13 +82,11 @@ export function Board(props: Props) {
   };
 
   const updateToDo = (id: string, newDescription: string) => {
-    setBoard((prevData) => {
-      const updatedTasks = { ...prevData.tasks };
-      updatedTasks[parseInt(id)].description = newDescription;
-      return {
-        ...prevData,
-        tasks: updatedTasks,
-      };
+    const copyOfTasks = { ...boardWithDefault.tasks };
+    copyOfTasks[parseInt(id)].description = newDescription;
+    setBoard({
+      ...boardWithDefault,
+      tasks: copyOfTasks,
     });
   };
 
@@ -100,15 +101,15 @@ export function Board(props: Props) {
       return;
 
     // if user drops within the same column but in a different position
-    const sourceCol = board.columns[source.droppableId];
-    const destinationCol = board.columns[destination.droppableId];
+    const sourceCol = boardWithDefault.columns[source.droppableId];
+    const destinationCol = boardWithDefault.columns[destination.droppableId];
 
     if (source.droppableId === destination.droppableId) {
       const newColumn = reorderColumn(sourceCol, source.index, destination.index);
       const newState = {
-        ...board,
+        ...boardWithDefault,
         columns: {
-          ...board.columns,
+          ...boardWithDefault.columns,
           [newColumn.id]: newColumn,
         },
       };
@@ -132,9 +133,9 @@ export function Board(props: Props) {
     };
 
     const newState = {
-      ...board,
+      ...boardWithDefault,
       columns: {
-        ...board.columns,
+        ...boardWithDefault.columns,
         [newSourceCol.id]: newSourceCol,
         [newDestinationCol.id]: newDestinationCol,
       },
@@ -160,12 +161,12 @@ export function Board(props: Props) {
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="column-section">
-          {board.columnOrder.map((columnId: string) => {
+          {boardWithDefault.columnOrder.map((columnId: string) => {
             // access the columns
-            const column = board.columns[columnId];
+            const column = boardWithDefault.columns[columnId];
 
             // access the tasks
-            const tasks = column.taskIds.map((taskId) => board.tasks[taskId]);
+            const tasks = column.taskIds.map((taskId) => boardWithDefault.tasks[taskId]);
 
             return (
               <Container

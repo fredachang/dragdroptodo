@@ -25,35 +25,12 @@ export interface SingleBoard {
   columnOrder: string[];
 }
 
-export type InitialData = SingleBoard[];
+export type Boards = SingleBoard[];
 
-export const initialData: InitialData = [
+export const initialData: Boards = [
   {
     id: uuidv4(),
     title: "board 1",
-    tasks: {},
-    columns: {
-      "column-1": {
-        id: "column-1",
-        title: "To-Do",
-        taskIds: [],
-      },
-      "column-2": {
-        id: "column-2",
-        title: "Doing",
-        taskIds: [],
-      },
-      "column-3": {
-        id: "column-3",
-        title: "Done",
-        taskIds: [],
-      },
-    },
-    columnOrder: ["column-1", "column-2", "column-3"],
-  },
-  {
-    id: uuidv4(),
-    title: "board 2",
     tasks: {},
     columns: {
       "column-1": {
