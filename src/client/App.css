@@ -1,41 +1,87 @@
 @font-face {
   font-family: "Fragment-Sans-Light";
-  src: local("Fragment"), url("./fonts/PPFragment-SansLight.otf") format("truetype");
+  src: local("Fragment"),
+    url("./fonts/PPFragment-SansLight.otf") format("truetype");
 }
 
 @font-face {
   font-family: "Fragment-Sans-Regular";
-  src: local("Fragment"), url("./fonts/PPFragment-SansRegular.otf") format("truetype");
+  src: local("Fragment"),
+    url("./fonts/PPFragment-SansRegular.otf") format("truetype");
 }
 
 @font-face {
   font-family: "Fragment-Sans-Bold";
-  src: local("Fragment"), url("./fonts/PPFragment-SansExtraBold.otf") format("truetype");
+  src: local("Fragment"),
+    url("./fonts/PPFragment-SansExtraBold.otf") format("truetype");
 }
 
 @font-face {
   font-family: "Fragment-Serif-Regular";
-  src: local("Fragment"), url("./fonts/PPFragment-SerifRegular.otf") format("truetype");
+  src: local("Fragment"),
+    url("./fonts/PPFragment-SerifRegular.otf") format("truetype");
 }
 
 @font-face {
   font-family: "Fragment-Serif-Light";
-  src: local("Fragment"), url("./fonts/PPFragment-SerifLight.otf") format("truetype");
+  src: local("Fragment"),
+    url("./fonts/PPFragment-SerifLight.otf") format("truetype");
 }
 
 @font-face {
   font-family: "Fragment-Serif-Bold";
-  src: local("Fragment"), url("./fonts/PPFragment-SerifExtraBold.otf") format("truetype");
+  src: local("Fragment"),
+    url("./fonts/PPFragment-SerifExtraBold.otf") format("truetype");
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: "Fragment-Sans-Regular";
-  background-color: rgb(20, 20, 20);
+  background-color: black;
   color: white;
+}
+
+.left-panel {
+  padding: 5px 10px;
+  height: 100vh;
+  width: 15vw;
+  background-color: black;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.right-panel {
+  width: 85vw;
+  height: 100vh;
+  position: fixed;
+  right: 0;
   background: url(./public/backdrop-4.png);
   background-size: contain;
+}
+
+.board-header {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
+form {
+  margin-left: 10px;
+  margin-top: 50px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.column-section {
+  width: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
 }
 
 h1 {
@@ -48,25 +94,12 @@ h2 {
   padding: 0 10px;
 }
 
-.header {
-  padding: 5px 10px;
-}
-
-.body {
-  display: flex;
-  justify-content: space-around;
-}
-
-form {
-  margin-left: 10px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+p {
+  font-size: 0.8rem;
 }
 
 input {
-  width: 60%;
+  width: 100%;
   height: 25px;
   background-color: black;
   border: none;
@@ -77,6 +110,14 @@ input {
 
 .new-to-do-input {
   width: 30%;
+}
+
+.description-input {
+  width: 40%;
+}
+
+.date-input {
+  width: 20%;
 }
 
 input:focus {
@@ -94,22 +135,22 @@ button {
 }
 
 .column-container {
-  margin: 50px auto;
-  width: 33%;
+  margin: 0;
+  width: 30%;
+  min-height: 500px;
 }
 
 .column {
-  height: 500px;
+  height: 100%;
   width: 90%;
   background-color: rgb(28, 28, 28);
-
   border-radius: 20px;
   padding: 10px 10px;
   margin: 10px;
 }
 
 .column-droppable {
-  height: 500px;
+  height: 100%;
   width: 90%;
   background-color: rgb(28, 28, 28);
   border-radius: 20px;
@@ -128,32 +169,56 @@ img {
   height: 100%;
 }
 
+.update-date-input {
+  display: inline;
+  width: 60%;
+}
+
 .to-do-item {
   border-radius: 15px;
-  height: 50px;
   margin: 10px;
-  padding: 2px 10px;
+  padding: 15px 10px;
   background-color: black;
   color: white;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
 }
 
 .to-do-item-dragged {
-  height: 50px;
-  margin: 10px;
-  padding: 2px 10px;
-  background-color: black;
   border-radius: 15px;
-
+  margin: 10px;
+  padding: 20px 10px;
+  background-color: black;
   color: white;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
   border: 1px solid white;
 }
 
 .delete-button {
   border: none;
+}
+
+.status-good {
+  color: green;
+}
+
+.status-late {
+  color: red;
+}
+
+.star-default {
+  color: white;
+}
+
+.star-highlight {
+  color: yellow;
+}
+
+.due-date {
+  width: 100%;
 }

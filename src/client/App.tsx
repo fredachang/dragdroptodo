@@ -1,185 +1,96 @@
 import "./App.css";
-import { Container } from "./components/Container";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { Column, Task, Tasks, initialData } from "./data";
-import { useState } from "react";
+import { Boards, SingleBoard, initialData } from "./data";
 import { v4 as uuidv4 } from "uuid";
-
-export type TasksArray = Tasks[];
-
-const reorderColumn = (sourceCol: Column, sourceIndex: number, destinationIndex: number) => {
-  const taskIds = sourceCol.taskIds;
-  const removedTask = taskIds.splice(sourceIndex, 1)[0];
-  taskIds.splice(destinationIndex, 0, removedTask);
-
-  const reorderedColumn = {
-    ...sourceCol,
-    taskIds: taskIds,
-  };
-  return reorderedColumn;
-};
+import { Board } from "./components/Board";
+import { Link, Route, Routes } from "react-router-dom";
+import { useLocalStorage } from "react-use";
+import { Welcome } from "./components/Welcome";
 
 export function App() {
-  const [data, setData] = useState(initialData);
-  const [newToDo, setNewToDo] = useState("");
+  const [boards, setBoards] = useLocalStorage<Boards>("boards", initialData);
+  const [boardName, setBoardName] = useLocalStorage<string>("boardName", "");
 
-  const handleNewToDo = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewToDo(e.target.value);
-  };
+  const boardsWithDefault: Boards = boards ?? initialData;
 
-  const createNewToDo = (e: React.FormEvent<HTMLFormElement>) => {
+  const boardNameWithDefault = boardName ?? "";
+
+  function handleNewBoard(e: React.ChangeEvent<HTMLInputElement>) {
+    setBoardName(e.target.value);
+  }
+
+  function createNewBoard(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
 
-    const newTask: Task = {
+    const newBoard: SingleBoard = {
       id: uuidv4(),
-      description: newToDo,
-    };
-
-    const copyOfTasks = { ...data.tasks };
-
-    copyOfTasks[parseInt(newTask.id)] = newTask;
-
-    const copyOfColumns = { ...data.columns };
-
-    const copyOfTaskIds = [...data.columns["column-1"].taskIds];
-
-    copyOfTaskIds.push(parseInt(newTask.id));
-
-    copyOfColumns["column-1"].taskIds = copyOfTaskIds;
-
-    const newData = {
-      ...data,
-      tasks: copyOfTasks,
-      columns: copyOfColumns,
-    };
-    setData(newData);
-    setNewToDo("");
-  };
-
-  const deleteToDo = (id: string) => {
-    const foundColumn = Object.values(data.columns).find((column) =>
-      column.taskIds.includes(parseInt(id))
-    );
-    if (foundColumn) {
-      foundColumn.taskIds = foundColumn.taskIds.filter((taskId) => taskId !== parseInt(id));
-      const updatedColumns = { ...data.columns };
-      updatedColumns[foundColumn.id] = foundColumn;
-      const updatedTasks = { ...data.tasks };
-      delete updatedTasks[parseInt(id)];
-      setData({
-        ...data,
-        tasks: updatedTasks,
-        columns: updatedColumns,
-      });
-    }
-  };
-
-  const updateToDo = (id: string, newDescription: string) => {
-    setData((prevData) => {
-      const updatedTasks = { ...prevData.tasks };
-      updatedTasks[parseInt(id)].description = newDescription;
-      return {
-        ...prevData,
-        tasks: updatedTasks,
-      };
-    });
-  };
-
-  const onDragEnd = (result: DropResult) => {
-    const { destination, source } = result;
-
-    // if user tries to drop in unknown destination (e.g. outside of droppable area)
-    if (!destination) return;
-
-    // if user drags and drops back in the same position
-    if (destination.droppableId === source.droppableId && destination.index === source.index)
-      return;
-
-    // if user drops within the same column but in a different position
-    const sourceCol = data.columns[source.droppableId];
-    const destinationCol = data.columns[destination.droppableId];
-
-    if (source.droppableId === destination.droppableId) {
-      const newColumn = reorderColumn(sourceCol, source.index, destination.index);
-      const newState = {
-        ...data,
-        columns: {
-          ...data.columns,
-          [newColumn.id]: newColumn,
-        },
-      };
-      setData(newState);
-      return;
-    }
-
-    // if the user moves from one column to another
-    const sourceTaskIds = [...sourceCol.taskIds];
-    const [removed] = sourceTaskIds.splice(source.index, 1);
-    const newSourceCol = {
-      ...sourceCol,
-      taskIds: sourceTaskIds,
-    };
-
-    const destinationTaskIds = [...destinationCol.taskIds];
-    destinationTaskIds.splice(destination.index, 0, removed);
-    const newDestinationCol = {
-      ...destinationCol,
-      taskIds: destinationTaskIds,
-    };
-
-    const newState = {
-      ...data,
+      title: boardNameWithDefault,
+      tasks: [],
       columns: {
-        ...data.columns,
-        [newSourceCol.id]: newSourceCol,
-        [newDestinationCol.id]: newDestinationCol,
+        "column-1": {
+          id: "column-1",
+          title: "To-Do",
+          taskIds: [],
+        },
+        "column-2": {
+          id: "column-2",
+          title: "Doing",
+          taskIds: [],
+        },
+        "column-3": {
+          id: "column-3",
+          title: "Done",
+          taskIds: [],
+        },
       },
+      columnOrder: ["column-1", "column-2", "column-3"],
     };
 
-    setData(newState);
+    const newBoards: Boards = [...boardsWithDefault, newBoard];
+    setBoards(newBoards);
+    setBoardName("");
+    localStorage.setItem(`board-${newBoard.id}`, JSON.stringify(newBoard));
+  }
+
+  const deleteBoard = (id: string) => {
+    const updatedBoards = boardsWithDefault.filter((board) => board.id !== id);
+    setBoards(updatedBoards);
   };
 
   return (
     <>
-      <div className="header">
+      <div className="left-panel">
         <h1>To Do List</h1>
-      </div>
 
-      <main>
-        <div className="form-container">
-          <form onSubmit={(e) => createNewToDo(e)}>
+        <div>
+          <form onSubmit={(e) => createNewBoard(e)}>
             <input
-              className="new-to-do-input"
               type="text"
-              placeholder="enter to-do"
-              value={newToDo}
-              onChange={handleNewToDo}
-            ></input>
-            <button type="submit">&#43;</button>
+              value={boardNameWithDefault}
+              placeholder="Enter new board name"
+              onChange={handleNewBoard}
+            />
+            <button>&#43;</button>
           </form>
         </div>
 
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="body">
-            {data.columnOrder.map((columnId: string) => {
-              // access the columns
-              const column = data.columns[columnId];
+        {boardsWithDefault.map((board) => (
+          <ul key={board.id}>
+            <Link to={`/board/${board.id}`}>{board.title}</Link>
+          </ul>
+        ))}
+      </div>
 
-              // access the tasks
-              const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
-
-              return (
-                <Container
-                  key={column.id}
-                  column={column}
-                  tasks={tasks}
-                  deleteToDo={deleteToDo}
-                  updateToDo={updateToDo}
-                />
-              );
-            })}
-          </div>
-        </DragDropContext>
+      <main className="right-panel">
+        <Routes>
+          <Route path="/" element={<Welcome />} />
+          {boardsWithDefault.map((board) => (
+            <Route
+              key={board.id}
+              path={`/board/${board.id}`}
+              element={<Board data={board} deleteBoard={deleteBoard} />}
+            />
+          ))}
+        </Routes>
       </main>
     </>
   );
