@@ -1,16 +1,22 @@
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { SingleBoard, Column, Task, Tasks } from "../data";
+import { SingleBoard, Column, Task } from "../data";
 import { Container } from "./Container";
 import { v4 as uuidv4 } from "uuid";
 import { useLocalStorage } from "react-use";
-export type TasksArray = Tasks[];
+import { DatePicker } from "./DatePicker";
+
+import format from "date-fns/format";
 
 interface Props {
   data: SingleBoard;
   deleteBoard: (id: string) => void;
 }
 
-const reorderColumn = (sourceCol: Column, sourceIndex: number, destinationIndex: number) => {
+const reorderColumn = (
+  sourceCol: Column,
+  sourceIndex: number,
+  destinationIndex: number
+) => {
   const taskIds = sourceCol.taskIds;
   const removedTask = taskIds.splice(sourceIndex, 1)[0];
   taskIds.splice(destinationIndex, 0, removedTask);
@@ -22,16 +28,44 @@ const reorderColumn = (sourceCol: Column, sourceIndex: number, destinationIndex:
   return reorderedColumn;
 };
 
+// fn that takes a date and returns a 'yyyy-mm-dd' string
+
+const formatDate = (date: Date) => {
+  return format(date, "yyyy-MM-dd");
+};
+
 export function Board(props: Props) {
   const { data, deleteBoard } = props;
-  const [board, setBoard] = useLocalStorage<SingleBoard>(`board-${data.id}`, data);
+  const [board, setBoard] = useLocalStorage<SingleBoard>(
+    `board-${data.id}`,
+    data
+  );
   const [newToDo, setNewToDo] = useLocalStorage<string>("new-to-do", "");
+  const [description, setDescription] = useLocalStorage<string>(
+    "description",
+    ""
+  );
+
+  const [dueDate, setDueDate] = useLocalStorage<string>(
+    "due-date",
+    formatDate(new Date())
+  );
 
   const boardWithDefault = board ?? data;
   const newToDoWithDefault = newToDo ?? "";
+  const descriptionWithDefault = description ?? "";
+  const dueDateWithDefault = dueDate ?? formatDate(new Date());
 
   const handleNewToDo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewToDo(e.target.value);
+  };
+
+  const handleDescription = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescription(e.target.value);
+  };
+
+  const handleDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDueDate(e.target.value);
   };
 
   const createNewToDo = (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,7 +73,10 @@ export function Board(props: Props) {
 
     const newTask: Task = {
       id: uuidv4(),
-      description: newToDoWithDefault,
+      title: newToDoWithDefault,
+      description: descriptionWithDefault,
+      dueDate: dueDateWithDefault,
+      starred: false,
     };
 
     const copyOfTasks = [...boardWithDefault.tasks];
@@ -61,6 +98,17 @@ export function Board(props: Props) {
     };
     setBoard(newData);
     setNewToDo("");
+    setDescription("");
+    setDueDate(new Date().toISOString().slice(0, 10));
+  };
+
+  const calculateStatus = (dueDateWithDefault: string) => {
+    const currentDate = formatDate(new Date());
+    if (dueDateWithDefault < currentDate) {
+      return false;
+    } else {
+      return true;
+    }
   };
 
   const deleteToDo = (id: string) => {
@@ -75,7 +123,9 @@ export function Board(props: Props) {
         ...boardWithDefault.columns,
         [columnId]: { ...column, taskIds: updatedColumn },
       };
-      const updatedTasks = boardWithDefault.tasks.filter((task) => task.id !== id);
+      const updatedTasks = boardWithDefault.tasks.filter(
+        (task) => task.id !== id
+      );
       setBoard({
         ...boardWithDefault,
         tasks: updatedTasks,
@@ -84,13 +134,67 @@ export function Board(props: Props) {
     }
   };
 
-  const updateToDo = (id: string, newDescription: string) => {
-    const taskIndex = boardWithDefault.tasks.findIndex((task) => task.id === id);
+  const updateToDo = (id: string, newTitle: string) => {
+    const taskIndex = boardWithDefault.tasks.findIndex(
+      (task) => task.id === id
+    );
+    if (taskIndex !== -1) {
+      const updatedTasks = [...boardWithDefault.tasks];
+      updatedTasks[taskIndex] = {
+        ...updatedTasks[taskIndex],
+        title: newTitle,
+      };
+      setBoard({
+        ...boardWithDefault,
+        tasks: updatedTasks,
+      });
+    }
+  };
+
+  const updateDueDate = (id: string, newDueDate: string) => {
+    const taskIndex = boardWithDefault.tasks.findIndex(
+      (task) => task.id === id
+    );
+    if (taskIndex !== -1) {
+      const updatedTasks = [...boardWithDefault.tasks];
+      updatedTasks[taskIndex] = {
+        ...updatedTasks[taskIndex],
+        dueDate: newDueDate,
+      };
+      setBoard({
+        ...boardWithDefault,
+        tasks: updatedTasks,
+      });
+    }
+  };
+
+  const updateDescription = (id: string, newDescription: string) => {
+    const taskIndex = boardWithDefault.tasks.findIndex(
+      (task) => task.id === id
+    );
     if (taskIndex !== -1) {
       const updatedTasks = [...boardWithDefault.tasks];
       updatedTasks[taskIndex] = {
         ...updatedTasks[taskIndex],
         description: newDescription,
+      };
+      setBoard({
+        ...boardWithDefault,
+        tasks: updatedTasks,
+      });
+    }
+  };
+
+  const starToDo = (id: string) => {
+    const taskIndex = boardWithDefault.tasks.findIndex(
+      (task) => task.id === id
+    );
+    if (taskIndex !== -1) {
+      const updatedTasks = [...boardWithDefault.tasks];
+      const currentStarred = updatedTasks[taskIndex].starred;
+      updatedTasks[taskIndex] = {
+        ...updatedTasks[taskIndex],
+        starred: !currentStarred,
       };
       setBoard({
         ...boardWithDefault,
@@ -106,7 +210,10 @@ export function Board(props: Props) {
     if (!destination) return;
 
     // if user drags and drops back in the same position
-    if (destination.droppableId === source.droppableId && destination.index === source.index)
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    )
       return;
 
     // if user drops within the same column but in a different position
@@ -114,7 +221,11 @@ export function Board(props: Props) {
     const destinationCol = boardWithDefault.columns[destination.droppableId];
 
     if (source.droppableId === destination.droppableId) {
-      const newColumn = reorderColumn(sourceCol, source.index, destination.index);
+      const newColumn = reorderColumn(
+        sourceCol,
+        source.index,
+        destination.index
+      );
       const newState = {
         ...boardWithDefault,
         columns: {
@@ -166,6 +277,7 @@ export function Board(props: Props) {
           &#8722;
         </button>
       </div>
+
       <div className="form-container">
         <form onSubmit={(e) => createNewToDo(e)}>
           <input
@@ -174,7 +286,19 @@ export function Board(props: Props) {
             placeholder="enter to-do"
             value={newToDo}
             onChange={handleNewToDo}
-          ></input>
+          />
+          <input
+            className="description-input"
+            type="text"
+            placeholder="enter description"
+            value={description}
+            onChange={handleDescription}
+          />
+          <DatePicker
+            handleDate={handleDate}
+            dueDateWithDefault={dueDateWithDefault}
+          />
+
           <button type="submit">&#43;</button>
         </form>
       </div>
@@ -187,7 +311,9 @@ export function Board(props: Props) {
 
             // access the tasks
             const tasks = column.taskIds.flatMap((taskId) => {
-              return boardWithDefault.tasks.filter((task) => task.id === taskId);
+              return boardWithDefault.tasks.filter(
+                (task) => task.id === taskId
+              );
             });
 
             return (
@@ -197,6 +323,10 @@ export function Board(props: Props) {
                 tasks={tasks}
                 updateToDo={updateToDo}
                 deleteToDo={deleteToDo}
+                calculateStatus={calculateStatus}
+                updateDueDate={updateDueDate}
+                updateDescription={updateDescription}
+                starToDo={starToDo}
               />
             );
           })}

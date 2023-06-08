@@ -7,17 +7,33 @@ interface Props {
   tasks: Task[];
   deleteToDo: (id: string) => void;
   updateToDo: (id: string, newDescription: string) => void;
+  calculateStatus: (dueDateWithDefault: string) => boolean;
+  updateDueDate: (id: string, newDueDate: string) => void;
+  updateDescription: (id: string, newDescription: string) => void;
+  starToDo: (id: string) => void;
 }
 
 export function Container(props: Props) {
-  const { column, tasks, deleteToDo, updateToDo } = props;
+  const {
+    column,
+    tasks,
+    deleteToDo,
+    updateToDo,
+    calculateStatus,
+    updateDueDate,
+    updateDescription,
+    starToDo,
+  } = props;
+
   return (
     <div className="column-container">
       <h2>{column.title}</h2>
       <Droppable droppableId={column.id}>
         {(droppableProvided, droppableSnapshot) => (
           <div
-            className={droppableSnapshot.isDraggingOver ? "column-droppable" : "column"}
+            className={
+              droppableSnapshot.isDraggingOver ? "column-droppable" : "column"
+            }
             ref={droppableProvided.innerRef}
             {...droppableProvided.droppableProps}
           >
@@ -25,16 +41,23 @@ export function Container(props: Props) {
               <Draggable key={task.id} draggableId={task.id} index={index}>
                 {(draggableProvided, draggableSnapshot) => (
                   <div
-                    className={draggableSnapshot.isDragging ? "to-do-item-dragged" : "to-do-item"}
+                    className={
+                      draggableSnapshot.isDragging
+                        ? "to-do-item-dragged"
+                        : "to-do-item"
+                    }
                     ref={draggableProvided.innerRef}
                     {...draggableProvided.draggableProps}
                     {...draggableProvided.dragHandleProps}
                   >
                     <ToDo
-                      id={task.id}
-                      description={task.description}
+                      task={task}
                       deleteToDo={deleteToDo}
                       updateToDo={updateToDo}
+                      calculateStatus={calculateStatus}
+                      updateDueDate={updateDueDate}
+                      updateDescription={updateDescription}
+                      starToDo={starToDo}
                     />
                   </div>
                 )}

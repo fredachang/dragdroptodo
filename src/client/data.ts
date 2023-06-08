@@ -1,6 +1,9 @@
 export type Task = {
   id: string;
+  title: string;
   description: string;
+  dueDate: string;
+  starred: boolean;
 };
 
 export type Tasks = Task[];
